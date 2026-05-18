@@ -21,7 +21,7 @@
   body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;padding:40px 24px 80px}
 
   /* ── LOGIN ── */
-  #login-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:1000;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+  #login-screen{display:flex;position:fixed;inset:0;background:var(--bg);z-index:1000;flex-direction:column;align-items:center;justify-content:center;padding:24px}
   .login-box{width:100%;max-width:380px}
   .login-icon{text-align:center;font-size:36px;margin-bottom:12px}
   .login-title{text-align:center;font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
@@ -208,9 +208,61 @@ const ALL_TICKETS = {
     {key:"OPS-33873",summary:"Cleanliness Not Exported Correctly — OHIP",           property:"Solana Hotel & Spa",          realm:"realm_57308",priority:"Medium",status:"New",               created:"2026-02-24",assignee:null},
     {key:"OPS-33470",summary:"[CORE] OOO Still Appearing After Removal — OHIP",     property:"Solana Hotel & Spa",          realm:"realm_57308",priority:"Highest",status:"Ready for Testing",created:"2026-02-09",assignee:"Christopher Uzochukwu"},
   ],
-  // Add more OBMs below as needed — same format
-  // "vito pavelic": [ ... ],
-  // "katja balazic": [ ... ],
+  "vito pavelic": [
+    {key:"OPS-36839",summary:"Moeesy / Milenij — PMS discrepancies units 001 & 002",       property:"Moeesy",                    realm:"realm_58762",priority:"High",  status:"New",        created:"2026-05-12",assignee:null},
+    {key:"OPS-36159",summary:"Cleaning Times Dashboard — no data, 404 error",               property:"Strawberry Arena",          realm:"realm_65866",priority:"High",  status:"New",        created:"2026-04-23",assignee:null},
+    {key:"OPS-35247",summary:"Rentlio / Flexkeeping displaying double booking",              property:"Hotel Slavija",             realm:"realm_60967",priority:"Medium",status:"New",        created:"2026-04-02",assignee:null},
+    {key:"OPS-34415",summary:"Cleaning schemas inconsistency — room check interval wrong",  property:"Unnamed property",          realm:"realm_59946",priority:"Medium",status:"Preparation",created:"2026-03-13",assignee:"Bostjan Zoks"},
+  ],
+
+  "katja balazic": [
+    {key:"OPS-37080",summary:"Some guest names showing as anonymous",                        property:"Hotel Guest Apart",         realm:"realm_66093",priority:"Medium",status:"New",               created:"2026-05-18",assignee:null},
+    {key:"OPS-36970",summary:"Guest Profile ID removed when workflow is edited",             property:"Hotel Guest Apart",         realm:"realm_66093",priority:"Medium",status:"New",               created:"2026-05-14",assignee:null},
+    {key:"OPS-36899",summary:"Housekeeper incorrectly assigned to future assignments",       property:"Hotel Guest Apart",         realm:"realm_66093",priority:"Medium",status:"New",               created:"2026-05-13",assignee:null},
+    {key:"OPS-36776",summary:"Legionella check ignores 7-day interval on empty rooms",       property:"Hotel Guest Apart",         realm:"realm_66093",priority:"Medium",status:"Preparation",       created:"2026-05-11",assignee:null},
+    {key:"OPS-36179",summary:"Past task credits still visible on work allocation",           property:"Hotel Nes Amsterdam",       realm:"realm_64708",priority:"Medium",status:"Ready for Testing", created:"2026-04-23",assignee:"Blaz Jager"},
+  ],
+
+  "ricardo stangenhaus": [
+    {key:"OPS-37038",summary:"Changing room status also changes the task icon",              property:"Aguadilla Surf Lodge",      realm:"realm_67778",priority:"Medium",status:"New",        created:"2026-05-15",assignee:null},
+    {key:"OPS-36858",summary:"Mews send status discrepancy — room stays Inspected",         property:"Otter Hospitality (El Castell Motel)",realm:"realm_48259",priority:"Medium",status:"New",created:"2026-05-12",assignee:null},
+    {key:"OPS-36495",summary:"Space name not showing on mobile",                             property:"Maritim Hotel Köln",        realm:"realm_48262",priority:"Medium",status:"New",        created:"2026-05-04",assignee:null},
+    {key:"OPS-36335",summary:"Editing user via importer disconnects from facilities",        property:"Multiple realms",           realm:"—",          priority:"Medium",status:"New",        created:"2026-04-28",assignee:null},
+    {key:"OPS-36315",summary:"Missing future reservations",                                  property:"Rixos Premium Dubrovnik",   realm:"realm_63137",priority:"Medium",status:"New",        created:"2026-04-27",assignee:null},
+    {key:"OPS-35921",summary:"Some users unable to open the assignments page",               property:"Palace Resorts",            realm:"—",          priority:"Medium",status:"New",        created:"2026-04-17",assignee:null},
+    {key:"OPS-35919",summary:"User logged out from app while cleaning room",                 property:"North Beach Hotel",         realm:"realm_50885",priority:"Medium",status:"New",        created:"2026-04-16",assignee:null},
+    {key:"OPS-35591",summary:"Cleaned room with DND showing incorrect color on web",         property:"Palace Resorts",            realm:"—",          priority:"Medium",status:"New",        created:"2026-04-08",assignee:null},
+    {key:"OPS-35471",summary:"Connecting room status not showing in Flexkeeping",            property:"RUNO Hotel Porvoo",         realm:"realm_5752", priority:"Medium",status:"New",        created:"2026-04-06",assignee:null},
+    {key:"OPS-35415",summary:"New assignment not displayed unless page refreshed (Edge)",    property:"Multiple realms",           realm:"—",          priority:"Medium",status:"New",        created:"2026-04-03",assignee:null},
+    {key:"OPS-34142",summary:"Checked out received but room remains as Stayover",           property:"Palace Resorts",            realm:"—",          priority:"High",  status:"Preparation",created:"2026-03-05",assignee:null},
+    {key:"OPS-34071",summary:"Cleaning-credits pagination not working",                      property:"Uptown Oasis San Jose Airport",realm:"realm_62153",priority:"Medium",status:"To Do",  created:"2026-03-02",assignee:"Bojan Petrovic"},
+    {key:"OPS-33931",summary:"Discrepancy between status import, workday and mobile",       property:"North Point Hospitality",   realm:"realm_8379", priority:"High",  status:"To Do",      created:"2026-02-25",assignee:"Blaz Jager"},
+    {key:"OPS-33702",summary:"Scheduled dates not showing in local language",               property:"All non-English clients",   realm:"—",          priority:"Medium",status:"New",        created:"2026-02-16",assignee:null},
+    {key:"OPS-33697",summary:"Room showing as Stayover despite departure reservation",      property:"Canmore Inn & Suites",      realm:"realm_47981",priority:"Medium",status:"New",        created:"2026-02-16",assignee:null},
+  ],
+
+  "dale thornton": [
+    {key:"OPS-37060",summary:"Dual key mapping required — realm 11274_27",                  property:"Punthill Veriu",            realm:"realm_11274",priority:"High",   status:"New",        created:"2026-05-18",assignee:null},
+    {key:"OPS-37047",summary:"Error when trying to save menu (Parameter key empty)",         property:"Unnamed property",          realm:"realm_67779",priority:"Medium", status:"New",        created:"2026-05-18",assignee:null},
+    {key:"OPS-37046",summary:"API key update required for realms 44978 and 39078",           property:"Adventure Hotels",          realm:"realm_44978",priority:"High",   status:"New",        created:"2026-05-18",assignee:null},
+    {key:"OPS-37004",summary:"Dual key mapping required — realm 67761",                     property:"The Bonobo",                realm:"realm_67761",priority:"High",   status:"New",        created:"2026-05-15",assignee:null},
+    {key:"OPS-37003",summary:"Dual key mapping required — realm 67761",                     property:"The Bonobo",                realm:"realm_67761",priority:"High",   status:"New",        created:"2026-05-15",assignee:null},
+    {key:"OPS-36961",summary:"Dual key mapping required — realm 67767",                     property:"Unnamed property",          realm:"realm_67767",priority:"High",   status:"New",        created:"2026-05-14",assignee:null},
+    {key:"OPS-36952",summary:"Integration ID change for one room",                           property:"X Hospitality PPS/PVC",     realm:"realm_34412",priority:"High",   status:"New",        created:"2026-05-14",assignee:null},
+    {key:"OPS-36679",summary:"Checklists non-functional on web",                             property:"Punthill Veriu",            realm:"realm_11274",priority:"Low",    status:"To Do",      created:"2026-05-09",assignee:"Medina Tochi Ajro"},
+    {key:"OPS-36675",summary:"OOO rooms not being released",                                 property:"Punthill Veriu",            realm:"realm_11274",priority:"Highest",status:"New",        created:"2026-05-09",assignee:null},
+    {key:"OPS-36670",summary:"Unable to restrict Flex chat to one facility",                property:"Punthill Norwest",          realm:"realm_11274",priority:"High",   status:"To Do",      created:"2026-05-09",assignee:"David Jager"},
+    {key:"OPS-36668",summary:"Maintenance analytics feature requests — Cllix",              property:"Cllix Apartments & Hotels", realm:"realm_38807",priority:"Highest",status:"To Do",      created:"2026-05-09",assignee:"Ricardo Stangenhaus"},
+    {key:"OPS-36427",summary:"Dual key child reservations not being removed",               property:"Quest Woolloongabba",       realm:"realm_63144",priority:"Medium", status:"New",        created:"2026-05-04",assignee:null},
+    {key:"OPS-36265",summary:"Flexkeeping marking rooms Inspected automatically",           property:"GK Hakuba Hospitality Group",realm:"realm_62147",priority:"Highest",status:"New",       created:"2026-04-27",assignee:null},
+    {key:"OPS-35995",summary:"Error when trying to upload video to Repair",                  property:"Talisman Beachside",        realm:"realm_53705",priority:"Medium", status:"New",        created:"2026-04-20",assignee:null},
+    {key:"OPS-34976",summary:"Check-in data not received via OHIP",                          property:"Daydream Island Resort",    realm:"realm_58758",priority:"High",   status:"New",        created:"2026-03-27",assignee:null},
+    {key:"OPS-34495",summary:"SOPs not visible to app users",                                property:"Freycinet Resort",          realm:"realm_62717",priority:"Highest",status:"To Do",      created:"2026-03-17",assignee:"Nikola Stojkovic"},
+    {key:"OPS-34448",summary:"Assignment tasks being cancelled by deactivated user",         property:"Quest Penrith",             realm:"realm_58756",priority:"High",   status:"New",        created:"2026-03-16",assignee:null},
+    {key:"OPS-34179",summary:"Departed guests not being cleared from rooms",                 property:"Accommodation Essentials",  realm:"realm_14704",priority:"Highest",status:"Preparation",created:"2026-03-06",assignee:null},
+    {key:"OPS-33831",summary:"Room clean status not saved — rooms returning to Dirty",      property:"Saltwater Hotels & Retreats",realm:"realm_12577",priority:"High",   status:"New",        created:"2026-02-23",assignee:null},
+    {key:"OPS-33806",summary:"Arrival showing on occupied room (RMS)",                       property:"Quest Penrith",             realm:"realm_58756",priority:"High",   status:"New",        created:"2026-02-20",assignee:null},
+  ],
 };
 
 // Fallback shown when name doesn't match any key above
@@ -442,7 +494,7 @@ const tbc=document.getElementById("threshold-btns");
 function toggleStale(){ SHOW_STALE=!SHOW_STALE; document.getElementById("stale-toggle").classList.toggle("active",SHOW_STALE); render(); }
 
 // ── BOOT ──────────────────────────────────────────────────────────────────
-document.getElementById("login-screen").style.display="flex";
+// Login screen is visible by default via CSS — no JS needed to show it
 </script>
 </body>
 </html>
