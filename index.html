@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Property Health Monitor — Flexkeeping</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0e0f11;--surface:#16181c;--surface2:#1d2025;
+    --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+    --text:#e8e9eb;--muted:#7a7d85;--dimmed:#4a4d55;
+    --red:#e84855;--red-bg:rgba(232,72,85,.1);
+    --amber:#f0a500;--amber-bg:rgba(240,165,0,.1);
+    --green:#22c98e;--green-bg:rgba(34,201,142,.1);
+    --blue:#4e9eff;--mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--r:8px;
+  }
+  html{scroll-behavior:smooth}
+  body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;padding:40px 24px 80px}
+
+  /* ── LOGIN ── */
+  #login-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:1000;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+  .login-box{width:100%;max-width:380px}
+  .login-icon{text-align:center;font-size:36px;margin-bottom:12px}
+  .login-title{text-align:center;font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
+  .login-sub{text-align:center;font-size:13px;color:var(--muted);font-weight:300;margin-bottom:28px;line-height:1.5}
+  .login-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:14px}
+  .login-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px}
+  .login-input{width:100%;padding:10px 12px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:var(--sans);font-size:13px;outline:none}
+  .login-input:focus{border-color:var(--green)}
+  .login-btn{padding:11px;border-radius:var(--r);border:none;background:var(--green);color:#0e0f11;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
+  .login-btn:hover{opacity:.85}
+  .login-err{display:none;font-size:12px;color:var(--red);padding:8px 10px;background:var(--red-bg);border-radius:var(--r)}
+  .login-note{font-size:11px;color:var(--dimmed);text-align:center;line-height:1.5}
+
+  /* ── HEADER ── */
+  .header{max-width:900px;margin:0 auto 28px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .header-left h1{font-size:22px;font-weight:600;letter-spacing:-.02em;margin-bottom:4px}
+  .header-left p{font-size:13px;color:var(--muted);font-weight:300}
+  .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .user-pill{font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:5px 10px;border-radius:20px;display:flex;align-items:center;gap:6px}
+  .user-pill span{color:var(--text);font-weight:500}
+  .user-pill button{background:none;border:none;color:var(--dimmed);cursor:pointer;font-size:11px;padding:0;margin-left:2px;font-family:var(--sans)}
+  .sync-badge{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);font-family:var(--mono);background:var(--surface);border:1px solid var(--border);padding:6px 12px;border-radius:20px;white-space:nowrap}
+  .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .refresh-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .refresh-btn:hover{border-color:var(--green);color:var(--green)}
+
+  /* ── CONTROLS ── */
+  .controls{max-width:900px;margin:0 auto 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .threshold-label{font-size:12px;color:var(--muted)}
+  .threshold-buttons{display:flex;gap:4px}
+  .tbtn{width:34px;height:28px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:var(--mono);font-size:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+  .tbtn.active{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+  .tbtn:hover:not(.active){border-color:var(--border2);color:var(--text)}
+  .stale-filter{margin-left:auto;display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--muted);transition:all .15s;user-select:none}
+  .stale-filter:hover{border-color:var(--border2);color:var(--text)}
+  .stale-filter.active{border-color:var(--amber);color:var(--amber);background:var(--amber-bg)}
+
+  /* ── STATS ── */
+  .stats{max-width:900px;margin:0 auto 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+  .stat-val{font-size:26px;font-weight:600;font-family:var(--mono);line-height:1;margin-bottom:5px}
+  .stat-lbl{font-size:11px;color:var(--muted);line-height:1.3}
+
+  /* ── SECTION ── */
+  .section-label{max-width:900px;margin:0 auto 12px;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+  .cards{max-width:900px;margin:0 auto}
+
+  /* ── CARD ── */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;animation:slideIn .25s ease both}
+  @keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .card.flagged{border-left:3px solid var(--red);border-color:rgba(232,72,85,.3)}
+  .card.watching{border-left:3px solid var(--amber);border-color:rgba(240,165,0,.2)}
+  .card-header{padding:14px 16px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;user-select:none;transition:background .15s}
+  .card-header:hover{background:rgba(255,255,255,.02)}
+  .card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:1px}
+  .card-icon.red{background:var(--red-bg)}.card-icon.amber{background:var(--amber-bg)}
+  .card-main{flex:1;min-width:0}
+  .card-name{font-size:14px;font-weight:500;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .realm{font-family:var(--mono);font-size:10px;color:var(--dimmed)}
+  .pill{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px}
+  .pill.red{background:var(--red-bg);color:var(--red)}.pill.amber{background:var(--amber-bg);color:var(--amber)}
+  .card-actions-top{display:flex;gap:6px;flex-shrink:0;align-items:flex-start}
+  .icon-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
+  .icon-btn:hover{border-color:var(--border2);color:var(--text)}
+  .card-body{border-top:1px solid var(--border);overflow:hidden;max-height:0;transition:max-height .3s ease}
+  .card-body.open{max-height:800px}
+  .bugs-list{padding:10px 16px;display:flex;flex-direction:column;gap:6px}
+  .bug-row{display:flex;align-items:flex-start;gap:10px}
+  .bug-key{font-family:var(--mono);font-size:10px;color:var(--blue);text-decoration:none;flex-shrink:0;margin-top:2px;min-width:76px;opacity:.85;transition:opacity .15s}
+  .bug-key:hover{opacity:1}
+  .bug-info{flex:1;min-width:0}
+  .bug-summary{font-size:12px;color:var(--text);line-height:1.4}
+  .bug-chips{display:flex;gap:6px;margin-top:3px;flex-wrap:wrap;align-items:center}
+  .chip{font-size:10px}
+  .chip.p-highest{color:#c0392b}.chip.p-high{color:var(--red)}.chip.p-medium{color:var(--amber)}.chip.p-low{color:var(--green)}
+  .chip.age{color:var(--dimmed)}.chip.age.stale{color:var(--amber)}.chip.no-assign{color:var(--red)}.chip.assign{color:var(--dimmed)}.chip.status{color:var(--green)}
+  .output-box{margin:0 16px 10px;padding:12px 14px;border-radius:var(--r);border:1px solid var(--border);background:rgba(255,255,255,.025)}
+  .output-label{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--dimmed);margin-bottom:7px}
+  .output-text{font-size:12px;line-height:1.7;color:var(--text);white-space:pre-wrap}
+  .card-footer{border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap}
+  .action-btn{padding:6px 12px;border-radius:var(--r);border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--sans);font-size:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;text-decoration:none}
+  .action-btn:hover{border-color:var(--border2);color:var(--text)}
+  .action-btn:disabled{opacity:.4;cursor:not-allowed}
+  .action-btn.copied{color:var(--green);border-color:rgba(34,201,142,.4)}
+
+  /* ── HEALTHY ── */
+  .healthy-grid{max-width:900px;margin:0 auto 40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:6px}
+  .healthy-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px}
+  .healthy-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .healthy-bugs{font-size:10px;color:var(--dimmed);margin-top:2px}
+
+  /* ── ALL CLEAR ── */
+  .all-clear{max-width:900px;margin:40px auto;text-align:center;padding:60px 0}
+  .all-clear-icon{font-size:40px;margin-bottom:16px}
+  .all-clear h2{font-size:18px;font-weight:500;margin-bottom:6px}
+  .all-clear p{font-size:13px;color:var(--muted)}
+
+  /* ── FOOTER ── */
+  .footer{max-width:900px;margin:40px auto 0;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:20px;flex-wrap:wrap;font-size:11px;color:var(--dimmed)}
+  .footer span{display:flex;align-items:center;gap:5px}
+  .spinner{display:inline-block;width:10px;height:10px;border:1.5px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ──────────────────────────────────────────────────────────── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-icon">🏨</div>
+    <h2 class="login-title">Property health monitor</h2>
+    <p class="login-sub">Flexkeeping by Mews<br>Enter your name to see your open property bugs</p>
+    <div class="login-card">
+      <div>
+        <label class="login-label">Your name</label>
+        <input class="login-input" id="login-name" type="text" placeholder="e.g. Andrea Pesic" onkeydown="if(event.key==='Enter')handleLogin()">
+      </div>
+      <div id="login-err" class="login-err"></div>
+      <button class="login-btn" onclick="handleLogin()">View my tickets →</button>
+      <p class="login-note">Data is pulled from Jira OPS.<br>Your name is used to match your ticket set.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── APP ────────────────────────────────────────────────────────────── -->
+<div id="app" style="display:none">
+
+<header class="header">
+  <div class="header-left">
+    <h1>Property health monitor</h1>
+    <p id="subtitle">Flexkeeping by Mews</p>
+  </div>
+  <div class="header-right">
+    <div class="user-pill">👤 <span id="user-name"></span><button onclick="logout()" title="Switch user">✕</button></div>
+    <div class="sync-badge"><span class="sync-dot"></span><span id="last-sync">—</span></div>
+    <button class="refresh-btn" onclick="refreshData()">↻ Refresh</button>
+  </div>
+</header>
+
+<div class="controls">
+  <span class="threshold-label">Flag at</span>
+  <div class="threshold-buttons" id="threshold-btns"></div>
+  <div class="stale-filter" id="stale-toggle" onclick="toggleStale()">⚠ <span id="stale-label">Show stale</span></div>
+</div>
+
+<div class="stats" id="stats"></div>
+<div id="main"></div>
+
+<div class="footer">
+  <span>📋 Jira OPS · data baked in, refresh re-renders</span>
+  <span>🔴 Flag threshold adjustable</span>
+  <span>✨ AI diagnosis + Slack draft on demand</span>
+  <span>✕ Dismiss per session</span>
+</div>
+
+</div><!-- end #app -->
+
+<script>
+// ── TICKET DATA per OBM ───────────────────────────────────────────────────
+// Pulled live from Jira 18 May 2026 — update by re-pulling from Claude
+
+const ALL_TICKETS = {
+  "andrea pesic": [
+    {key:"OPS-36861",summary:"Cleaning timer resets when phone auto-locks",         property:"Hotel Matts",                realm:"realm_64226",priority:"Medium", status:"New",               created:"2026-05-12",assignee:null},
+    {key:"OPS-36500",summary:"Room Statuses Showing Incorrectly — OHIP",            property:"Hotel Freizeit In",           realm:"realm_62145",priority:"Highest",status:"In Progress",       created:"2026-05-05",assignee:"Christopher Uzochukwu"},
+    {key:"OPS-36499",summary:"Rooms Incorrectly Marked as Dirty and OOS",           property:"Hotel IMLAUER & Bräu Salzburg",realm:"realm_62719",priority:"High",  status:"New",               created:"2026-05-05",assignee:null},
+    {key:"OPS-36497",summary:"Issues with Automated Tasks / Workflow Builder",      property:"Hotel IMLAUER & Bräu Salzburg",realm:"realm_62719",priority:"Medium",status:"New",               created:"2026-05-05",assignee:null},
+    {key:"OPS-36415",summary:"Possible Issue with the Workflow Builder",            property:"Hotel IMLAUER & Bräu Salzburg",realm:"realm_62719",priority:"Medium",status:"New",               created:"2026-05-01",assignee:null},
+    {key:"OPS-36222",summary:"Automated Cleanings Not Calculated Correctly",        property:"Maritim Hotel Düsseldorf",    realm:"realm_29761",priority:"High",  status:"New",               created:"2026-04-23",assignee:null},
+    {key:"OPS-36038",summary:"Room Allocation for Future Not Being Saved",          property:"Zest - Hotel & Resorts",      realm:"realm_45518",priority:"High",  status:"New",               created:"2026-04-21",assignee:null},
+    {key:"OPS-36017",summary:"Wrong Date Information",                              property:"Rixos Premium Dubrovnik",     realm:"realm_63137",priority:"Medium",status:"New",               created:"2026-04-20",assignee:null},
+    {key:"OPS-35977",summary:"Issues With Cleaning Times Dashboard",                property:"Nester Finn | Financial District",realm:"realm_64713",priority:"High",status:"New",            created:"2026-04-17",assignee:"Bojan Kovacec"},
+    {key:"OPS-35966",summary:"SOPs Showing Twice",                                  property:"Rixos Premium Dubrovnik",     realm:"realm_63137",priority:"Medium",status:"To Do",             created:"2026-04-17",assignee:"Nikola Stojkovic"},
+    {key:"OPS-35846",summary:"Inconsistent Text Capitalization — Add-ons & Rooms",  property:"Rixos Premium Dubrovnik",     realm:"realm_63137",priority:"Medium",status:"New",               created:"2026-04-15",assignee:null},
+    {key:"OPS-35243",summary:"Legionella Check Wrong Recalculation",                property:"Hotel Matts",                 realm:"realm_64226",priority:"Medium",status:"New",               created:"2026-04-02",assignee:null},
+    {key:"OPS-34552",summary:"Manual Adding of Linen Change Not Being Saved",       property:"Hotel IMLAUER & Bräu Salzburg",realm:"realm_62719",priority:"Medium",status:"New",             created:"2026-03-18",assignee:"Ina Kure"},
+    {key:"OPS-34231",summary:"Room Moves Before Check In Dirtifying Rooms",         property:"Schloss & Gut Liebenberg",    realm:"realm_58054",priority:"Medium",status:"New",               created:"2026-03-09",assignee:null},
+    {key:"OPS-34167",summary:"User Cannot Log Into Flexkeeping on Phone",           property:"Maritim Hotel Düsseldorf",    realm:"realm_29761",priority:"Medium",status:"To Do",             created:"2026-03-05",assignee:"David Jager"},
+    {key:"OPS-33878",summary:"Incorrect Room Status",                               property:"Solana Hotel & Spa",          realm:"realm_57308",priority:"High",  status:"New",               created:"2026-02-24",assignee:null},
+    {key:"OPS-33873",summary:"Cleanliness Not Exported Correctly — OHIP",           property:"Solana Hotel & Spa",          realm:"realm_57308",priority:"Medium",status:"New",               created:"2026-02-24",assignee:null},
+    {key:"OPS-33470",summary:"[CORE] OOO Still Appearing After Removal — OHIP",     property:"Solana Hotel & Spa",          realm:"realm_57308",priority:"Highest",status:"Ready for Testing",created:"2026-02-09",assignee:"Christopher Uzochukwu"},
+  ],
+  // Add more OBMs below as needed — same format
+  // "vito pavelic": [ ... ],
+  // "katja balazic": [ ... ],
+};
+
+// Fallback shown when name doesn't match any key above
+const FALLBACK_TICKETS = [];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let TODAY      = new Date();
+let RAW_BUGS   = [];
+let CURRENT_NAME = "";
+let THRESHOLD  = 3;
+let SHOW_STALE = false;
+const DISMISSED = new Set();
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function daysAgo(d){ return Math.floor((TODAY - new Date(d)) / 86400000); }
+function fmtDT(d){  return d.toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
+function groupByProperty(bugs){
+  const m={};
+  for(const b of bugs){ if(!m[b.property]) m[b.property]={property:b.property,realm:b.realm,bugs:[]}; m[b.property].bugs.push(b); }
+  return Object.values(m);
+}
+const PRANK={Highest:0,High:1,Medium:2,Low:3};
+function worstPriority(bugs){ return bugs.reduce((best,b)=>PRANK[b.priority]<PRANK[best]?b.priority:best,"Low"); }
+
+// ── AUTH ──────────────────────────────────────────────────────────────────
+function handleLogin(){
+  const name = document.getElementById("login-name").value.trim();
+  const err  = document.getElementById("login-err");
+  err.style.display="none";
+  if(!name){ err.textContent="Please enter your name."; err.style.display="block"; return; }
+
+  CURRENT_NAME = name;
+  const key = name.toLowerCase();
+  RAW_BUGS = ALL_TICKETS[key] || FALLBACK_TICKETS;
+
+  TODAY = new Date();
+  document.getElementById("user-name").textContent = name;
+  document.getElementById("last-sync").textContent = "Jira OPS · " + fmtDT(TODAY);
+  document.getElementById("subtitle").textContent  = `${RAW_BUGS.length} open bugs · ${new Set(RAW_BUGS.map(b=>b.property)).size} properties · ${fmtDT(TODAY)}`;
+
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("app").style.display="block";
+  render();
+}
+
+function logout(){
+  CURRENT_NAME=""; RAW_BUGS=[];
+  document.getElementById("app").style.display="none";
+  document.getElementById("login-screen").style.display="flex";
+  document.getElementById("login-name").value="";
+}
+
+function refreshData(){
+  // Re-load tickets for current user and update timestamp
+  const key = CURRENT_NAME.toLowerCase();
+  RAW_BUGS = ALL_TICKETS[key] || FALLBACK_TICKETS;
+  TODAY = new Date();
+  document.getElementById("last-sync").textContent = "Jira OPS · " + fmtDT(TODAY);
+  document.getElementById("subtitle").textContent  = `${RAW_BUGS.length} open bugs · ${new Set(RAW_BUGS.map(b=>b.property)).size} properties · ${fmtDT(TODAY)}`;
+  DISMISSED.clear();
+  render();
+}
+
+// ── AI ────────────────────────────────────────────────────────────────────
+async function callClaude(system, user){
+  const r = await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system,messages:[{role:"user",content:user}]})
+  });
+  const d = await r.json();
+  return d.content?.find(b=>b.type==="text")?.text||"";
+}
+
+async function runDiagnosis(propId,propName,realm){
+  const btn=document.getElementById(`diag-btn-${propId}`);
+  const box=document.getElementById(`diag-${propId}`);
+  const txt=document.getElementById(`diag-text-${propId}`);
+  btn.disabled=true; btn.innerHTML=`<span class="spinner"></span> Diagnosing…`;
+  const list=RAW_BUGS.filter(b=>b.property===propName).map(b=>`${b.key}: ${b.summary} (${b.priority}, ${daysAgo(b.created)}d, ${b.assignee||"unassigned"})`).join("\n");
+  const out=await callClaude(
+    "You are a Flexkeeping HMS implementation assistant at Mews. Given a cluster of open bugs on one property, write a 2-sentence diagnosis: what the pattern suggests and one specific recommended action. Direct, concrete, no bullets.",
+    `Property: ${propName} (${realm})\n\nBugs:\n${list}`);
+  box.style.display="block"; txt.textContent=out.trim(); btn.style.display="none";
+}
+
+async function runSlack(propId,propName,realm){
+  const btn=document.getElementById(`slack-btn-${propId}`);
+  const box=document.getElementById(`slack-${propId}`);
+  const txt=document.getElementById(`slack-text-${propId}`);
+  btn.disabled=true; btn.innerHTML=`<span class="spinner"></span> Drafting…`;
+  const bugs=RAW_BUGS.filter(b=>b.property===propName);
+  const list=bugs.map(b=>`${b.key}: ${b.summary}`).join("\n");
+  const out=await callClaude(
+    `Write a Slack escalation for #rnd-hms-issues from ${CURRENT_NAME||"the onboarding manager"}. Rules: start with <!here>, property + realm on first line, one sentence on the pattern, one on client impact, soft ask ("Could someone please check?"), ticket keys on their own lines, end "Thank you!". No bullets, no bold, no emoji, no urgency words. 3–5 sentences total.`,
+    `Property: ${propName} (${realm})\nBugs (${bugs.length}):\n${list}`);
+  box.style.display="block"; txt.textContent=out.trim(); btn.style.display="none";
+}
+
+function copySlack(propId){
+  const txt=document.getElementById(`slack-text-${propId}`);
+  const btn=document.getElementById(`copy-btn-${propId}`);
+  navigator.clipboard?.writeText(txt.textContent).then(()=>{ btn.textContent="✓ Copied"; btn.classList.add("copied"); setTimeout(()=>{ btn.textContent="Copy message"; btn.classList.remove("copied"); },2000); });
+}
+
+function dismissCard(prop){ DISMISSED.add(prop); render(); }
+function toggleBody(btn){
+  const body=btn.closest(".card").querySelector(".card-body");
+  const open=btn.dataset.open==="1";
+  body.classList.toggle("open",!open); btn.dataset.open=open?"0":"1"; btn.textContent=open?"▼":"▲";
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+function render(){
+  const groups=groupByProperty(RAW_BUGS);
+  const flagged =groups.filter(g=>g.bugs.length>=THRESHOLD&&!DISMISSED.has(g.property)).sort((a,b)=>b.bugs.length-a.bugs.length||PRANK[worstPriority(a.bugs)]-PRANK[worstPriority(b.bugs)]);
+  const watching=groups.filter(g=>g.bugs.length===THRESHOLD-1&&!DISMISSED.has(g.property));
+  const healthy =groups.filter(g=>g.bugs.length<THRESHOLD-1&&!DISMISSED.has(g.property));
+  const stale   =RAW_BUGS.filter(b=>daysAgo(b.created)>14&&!b.assignee);
+
+  const df=SHOW_STALE?flagged.filter(g=>g.bugs.some(b=>daysAgo(b.created)>14&&!b.assignee)):flagged;
+  const dw=SHOW_STALE?watching.filter(g=>g.bugs.some(b=>daysAgo(b.created)>14&&!b.assignee)):watching;
+
+  document.getElementById("stale-label").textContent=SHOW_STALE?`Stale only (on)`:`${stale.length} stale`;
+  document.getElementById("stats").innerHTML=[
+    {val:flagged.length, lbl:`Flagged (${THRESHOLD}+ bugs)`, color:flagged.length?"var(--red)":"var(--text)"},
+    {val:watching.length,lbl:`Watching (${THRESHOLD-1} bugs)`,color:watching.length?"var(--amber)":"var(--text)"},
+    {val:healthy.length, lbl:"Healthy properties",           color:"var(--green)"},
+    {val:RAW_BUGS.length,lbl:"Total open bugs",              color:"var(--text)"},
+  ].map(s=>`<div class="stat-card"><div class="stat-val" style="color:${s.color}">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join("");
+
+  const main=document.getElementById("main");
+  main.innerHTML="";
+
+  function section(list,cls,color,label){
+    if(!list.length) return;
+    const lbl=document.createElement("div"); lbl.className="section-label"; lbl.style.color=color; lbl.style.maxWidth="900px"; lbl.style.margin="0 auto 12px"; lbl.textContent=label; main.appendChild(lbl);
+    const cont=document.createElement("div"); cont.className="cards"; main.appendChild(cont);
+    list.forEach(g=>cont.appendChild(buildCard(g,cls)));
+  }
+
+  section(df,"flagged","var(--red)",`⚠ ${df.length} ${df.length===1?"property":"properties"} flagged — ${THRESHOLD}+ open bugs`);
+  if(dw.length){ const sp=document.createElement("div"); sp.style.height="16px"; main.appendChild(sp); section(dw,"watching","var(--amber)",`👁 ${dw.length} watching — ${THRESHOLD-1} bug${THRESHOLD-1!==1?"s":""}`); }
+  if(healthy.length&&!SHOW_STALE){
+    const sp=document.createElement("div"); sp.style.height="16px"; main.appendChild(sp);
+    const lbl=document.createElement("div"); lbl.className="section-label"; lbl.style.color="var(--green)"; lbl.style.maxWidth="900px"; lbl.style.margin="0 auto 12px"; lbl.textContent=`✓ ${healthy.length} healthy`; main.appendChild(lbl);
+    const grid=document.createElement("div"); grid.className="healthy-grid";
+    healthy.forEach(g=>{ const c=document.createElement("div"); c.className="healthy-card"; c.innerHTML=`<div class="healthy-name">${g.property}</div><div class="healthy-bugs">${g.bugs.length} bug${g.bugs.length!==1?"s":""}</div>`; grid.appendChild(c); });
+    main.appendChild(grid);
+  }
+  if(!df.length&&!dw.length){
+    main.innerHTML=`<div class="all-clear"><div class="all-clear-icon">✅</div><h2>All clear</h2><p>No property has ${THRESHOLD}+ open bugs${SHOW_STALE?" with the stale filter":""}.</p></div>`;
+  }
+}
+
+function buildCard(g,cls){
+  const worst  =worstPriority(g.bugs);
+  const avgAge =Math.round(g.bugs.reduce((s,b)=>s+daysAgo(b.created),0)/g.bugs.length);
+  const noAssign=g.bugs.filter(b=>!b.assignee).length;
+  const pcolor ={Highest:"red",High:"red",Medium:"amber",Low:"green"}[worst]||"amber";
+  const propId =g.property.replace(/[^a-zA-Z0-9]/g,"-");
+
+  const card=document.createElement("div"); card.className=`card ${cls}`;
+
+  const header=document.createElement("div"); header.className="card-header";
+  header.innerHTML=`
+    <div class="card-icon ${cls==="flagged"?"red":"amber"}">${cls==="flagged"?"🔴":"🟡"}</div>
+    <div class="card-main">
+      <div class="card-name">${g.property}</div>
+      <div class="card-meta">
+        <span class="realm">${g.realm}</span>
+        <span class="pill ${pcolor}">${worst}</span>
+        <span class="pill red">${g.bugs.length} bug${g.bugs.length!==1?"s":""}</span>
+        <span style="font-size:11px;color:var(--dimmed)">avg ${avgAge}d</span>
+        ${noAssign>0?`<span style="font-size:11px;color:var(--red)">${noAssign} unassigned</span>`:""}
+      </div>
+    </div>
+    <div class="card-actions-top">
+      <button class="icon-btn" data-open="1" onclick="event.stopPropagation();toggleBody(this)">▲</button>
+      <button class="icon-btn" onclick="event.stopPropagation();dismissCard('${g.property.replace(/'/g,"\\'")}')">✕</button>
+    </div>`;
+  header.onclick=()=>toggleBody(header.querySelector("[data-open]"));
+
+  const body=document.createElement("div"); body.className="card-body open";
+
+  const bl=document.createElement("div"); bl.className="bugs-list";
+  [...g.bugs].sort((a,b)=>PRANK[a.priority]-PRANK[b.priority]).forEach(bug=>{
+    const age=daysAgo(bug.created);
+    bl.innerHTML+=`<div class="bug-row">
+      <a class="bug-key" href="https://mews.atlassian.net/browse/${bug.key}" target="_blank" rel="noopener">${bug.key}</a>
+      <div class="bug-info">
+        <div class="bug-summary">${bug.summary}</div>
+        <div class="bug-chips">
+          <span class="chip p-${bug.priority.toLowerCase()}">${bug.priority}</span>
+          <span class="chip age${age>14?" stale":""}">${age}d</span>
+          ${bug.assignee?`<span class="chip assign">→ ${bug.assignee.split(" ")[0]}</span>`:`<span class="chip no-assign">unassigned</span>`}
+          ${bug.status!=="New"?`<span class="chip status">${bug.status}</span>`:""}
+        </div>
+      </div>
+    </div>`;
+  });
+  body.appendChild(bl);
+
+  const diagBox=document.createElement("div"); diagBox.className="output-box"; diagBox.id=`diag-${propId}`; diagBox.style.display="none";
+  diagBox.innerHTML=`<div class="output-label">AI diagnosis</div><div class="output-text" id="diag-text-${propId}"></div>`;
+  body.appendChild(diagBox);
+
+  const slackBox=document.createElement("div"); slackBox.className="output-box"; slackBox.id=`slack-${propId}`; slackBox.style.display="none";
+  slackBox.innerHTML=`<div class="output-label">Draft · #rnd-hms-issues</div><div class="output-text" id="slack-text-${propId}"></div><button class="action-btn" style="margin-top:8px" id="copy-btn-${propId}" onclick="copySlack('${propId}')">Copy message</button>`;
+  body.appendChild(slackBox);
+
+  const foot=document.createElement("div"); foot.className="card-footer";
+  foot.innerHTML=`
+    <button class="action-btn" id="diag-btn-${propId}" onclick="runDiagnosis('${propId}','${g.property.replace(/'/g,"\\'")}','${g.realm}')">✨ AI diagnosis</button>
+    <button class="action-btn" id="slack-btn-${propId}" onclick="runSlack('${propId}','${g.property.replace(/'/g,"\\'")}','${g.realm}')">📨 Draft escalation</button>
+    <a href="https://mews.atlassian.net/browse/${g.bugs[0]?.key}" target="_blank" rel="noopener" class="action-btn">Open in Jira ↗</a>`;
+  body.appendChild(foot);
+
+  card.appendChild(header); card.appendChild(body);
+  return card;
+}
+
+// ── THRESHOLD BUTTONS ─────────────────────────────────────────────────────
+const tbc=document.getElementById("threshold-btns");
+[2,3,4,5].forEach(n=>{
+  const b=document.createElement("button"); b.className="tbtn"+(n===THRESHOLD?" active":""); b.textContent=n+"+";
+  b.onclick=()=>{ THRESHOLD=n; render(); tbc.querySelectorAll(".tbtn").forEach((btn,i)=>btn.classList.toggle("active",[2,3,4,5][i]===n)); };
+  tbc.appendChild(b);
+});
+function toggleStale(){ SHOW_STALE=!SHOW_STALE; document.getElementById("stale-toggle").classList.toggle("active",SHOW_STALE); render(); }
+
+// ── BOOT ──────────────────────────────────────────────────────────────────
+document.getElementById("login-screen").style.display="flex";
+</script>
+</body>
+</html>
